@@ -1,4 +1,8 @@
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import SearchBar from "./components/SearchBar";
+import ToggleTheme from "./components/ToggleTheme";
+import WeatherCard from "./components/WeatherCard";
 
 function App() {
   const [city, setCity] = useState("");
@@ -21,14 +25,14 @@ function App() {
       console.log(data);
 
       if (data.cod === "404" || data.cod === 404) {
-        setError("Kota tidak ditemukan!");
+        setError("❌ Kota tidak ditemukan!");
         setWeather(null);
       } else {
         setWeather(data);
       }
     } catch (error) {
       console.error("Fetch gagal:", error);
-      setError("Gagal mengambil data cuaca.");
+      setError("⚠️ Gagal mengambil data cuaca.");
       setWeather(null);
     }
   };
@@ -43,62 +47,52 @@ function App() {
 
   return (
     <div
-      className={`min-h-screen flex flex-col items-center justify-center transition-colors duration-500 ${
+      className={`min-h-screen flex flex-col items-center justify-center transition-all duration-700 ${
         darkMode
-          ? "bg-gray-900 text-white"
-          : "bg-gradient-to-br from-blue-200 to-blue-500 text-gray-900"
+          ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 text-white"
+          : "bg-gradient-to-br from-sky-200 via-blue-300 to-blue-500 text-gray-900"
       }`}
     >
-      <div className="w-full max-w-md p-6 rounded-2xl shadow-xl bg-white/40 dark:bg-gray-800/40 backdrop-blur-md">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-md p-8 rounded-3xl shadow-2xl 
+                   bg-white/30 dark:bg-gray-800/40 backdrop-blur-xl 
+                   border border-white/20 dark:border-gray-700/40"
+      >
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold tracking-wide">🌤️ Weather App</h1>
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className="px-3 py-1 rounded-xl bg-gray-200 dark:bg-gray-700"
-          >
-            {darkMode ? "🌞" : "🌙"}
-          </button>
+          <h1 className="text-3xl font-bold tracking-wide flex items-center gap-2">
+            🌦️{" "}
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-500">
+              Weatherly
+            </span>
+          </h1>
+          <ToggleTheme darkMode={darkMode} setDarkMode={setDarkMode} />
         </div>
 
-        <div className="flex mb-4">
-          <input
-            type="text"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Masukkan nama kota..."
-            className="flex-grow px-4 py-2 rounded-l-xl outline-none dark:bg-gray-700 dark:text-white"
-          />
-          <button
-            onClick={fetchWeather}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-r-xl"
+        <SearchBar
+          city={city}
+          setCity={setCity}
+          onSearch={fetchWeather}
+          onKeyDown={handleKeyDown}
+        />
+
+        {error && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-red-500 text-center mt-3"
           >
-            Cari
-          </button>
-        </div>
-
-        {error && <p className="text-red-500 text-center">{error}</p>}
-
-        {weather && (
-          <div className="text-center mt-4">
-            <h2 className="text-2xl font-semibold">{weather.name}</h2>
-            <p className="text-4xl font-bold my-2">
-              {Math.round(weather.main.temp)}°C
-            </p>
-            <p className="capitalize text-lg">
-              {weather.weather[0].description}
-            </p>
-            <img
-              src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`}
-              alt="weather icon"
-              className="mx-auto mt-2"
-            />
-          </div>
+            {error}
+          </motion.p>
         )}
-      </div>
 
-      <p className="mt-6 text-sm opacity-70">
-        Dibuat dengan 💙 React + TailwindCSS
+        <WeatherCard weather={weather} />
+      </motion.div>
+
+      <p className="mt-8 text-xs opacity-70 tracking-wide">
+        Dibuat dengan 💙 React + TailwindCSS + Framer Motion
       </p>
     </div>
   );
